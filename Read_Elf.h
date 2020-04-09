@@ -1,15 +1,23 @@
+#ifndef READ_ELF_H
+#define READ_ELF_H
+
 #include<stdio.h>
 #include<string.h>
+#include"def.h"
+
 typedef struct{
 	unsigned char b[8];
+	operator unsigned long long(){ return *(unsigned long long*)b; }
 }int64;
 
 typedef struct{
 	unsigned char b[4];
+	operator unsigned int(){ return *(unsigned int*)b; }
 }int32;
 
 typedef struct{
 	unsigned char b[2];
+	operator unsigned short(){ return *(unsigned short*)b; }
 }int16;
 
 typedef struct{
@@ -98,34 +106,68 @@ typedef struct
 } Elf64_Phdr;
 
 
-void read_elf();
-void read_Elf_header();
-void read_elf_sections();
-void read_symtable();
-void read_Phdr();
+#define ELF_NAME "elf"
+
+class ElfReader
+{
+public:
+	ElfReader(MonitorUnit* _monitorTable, int cnt);
+	~ElfReader();
+	bool open_file(char* filename);
+	void read_elf(char* filename);
+	void read_Elf_header();
+	void read_elf_sections();
+	void read_symtable();
+	void read_Phdr();
+
+	unsigned long long cadr;	//代码段在解释文件中的偏移地址	
+	unsigned int csize;	//代码段的长度
+	unsigned long long cvadr;	//代码段在内存中的虚拟地址
+
+	unsigned long long dadr;	//data段在解释文件中的偏移地址	
+	unsigned int dsize;	//data段的长度
+	unsigned long long dvadr;	//data段在内存中的虚拟地址
+
+	unsigned long long gp;	//全局数据段在内存的地址
+	unsigned long long madr;	//main函数在内存中地址
+	unsigned long long mend;	//main's end
+	unsigned long long endPC;	//程序结束时的PC
+	unsigned long long entry;	//程序的入口地址
+	
+	FILE *file;
+	FILE *elf;
+	Elf64_Ehdr elf64_hdr;
+
+	//Program headers
+	unsigned long long padr;
+	unsigned int psize;
+	unsigned int pnum;
+
+	//Section Headers
+	unsigned long long sadr;
+	unsigned int ssize;
+	unsigned int snum;
+
+	//Symbol table
+	unsigned int symnum;
+	unsigned long long symadr;
+	unsigned int symsize;
+
+	// section header table index of the entry
+	// associated with section name
+	unsigned int index;
+
+	// string table's offset in file
+	unsigned long long stradr;
+	unsigned long long strLen;
+
+	MonitorUnit* monitorTable;
+	int monitorCnt;
+};
 
 
-//代码段在解释文件中的偏移地址
-unsigned int cadr=0;
+#endif
 
-//代码段的长度
-unsigned int csize=0;
 
-//代码段在内存中的虚拟地址
-unsigned int vadr=0;
-
-//全局数据段在内存的地址
-unsigned long long gp=0;
-
-//main函数在内存中地址
-unsigned int madr=0;
-
-//程序结束时的PC
-unsigned int endPC=0;
-
-//程序的入口地址
-unsigned int entry=0;
-
-FILE *file=NULL;
 
 

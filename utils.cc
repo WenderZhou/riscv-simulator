@@ -52,6 +52,7 @@ INSTRUCTION_TYPE get_type(INSTRUCTION instruction)
 	switch (opcode)
 	{
 		case 0x33:
+		case 0x3b:
 			return TYPE_R;
 		case 0x03:
 		case 0x13:
@@ -104,7 +105,7 @@ unsigned int get_imm(INSTRUCTION instruction)
 		}
 	case TYPE_U:
 		{
-		unsigned int u_31_12 = getbit(instruction, 31, 12);
+		unsigned int u_31_12 = getbit(instruction, 12, 31);
 		return u_31_12 << 12;
 		}
 	case TYPE_J:
@@ -124,102 +125,197 @@ unsigned int get_imm(INSTRUCTION instruction)
 
 void show_R(INSTRUCTION instruction)
 {
+	unsigned int opcode = get_opcode(instruction);
 	unsigned int funct3 = get_funct3(instruction);
 	unsigned int funct7 = get_funct7(instruction);
 	unsigned int rd = get_rd(instruction);
 	unsigned int rs1 = get_rs1(instruction);
 	unsigned int rs2 = get_rs2(instruction);
-	switch (funct3)
+	switch (opcode)
 	{
-	case 0x0:	// add,mul,sub
-		switch (funct7)
+	case 0x33:
+		switch (funct3)
 		{
-		case 0x00:
-			printf("add %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+		case 0x0:	// add,mul,sub
+			switch (funct7)
+			{
+			case 0x00:
+				printf("add	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x01:
+				printf("mul	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x20:
+				printf("sub	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
-		case 0x01:
-			printf("mul %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+		case 0x1:	// sll,mulh
+			switch (funct7)
+			{
+			case 0x00:
+				printf("sll	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x01:
+				printf("mulh	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
-		case 0x20:
-			printf("sub %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+		case 0x2:	// slt
+			switch (funct7)
+			{
+			case 0x00:
+				printf("slt	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
+			break;
+		case 0x4:	// xor,div
+			switch (funct7)
+			{
+			case 0x00:
+				printf("xor	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x01:
+				printf("div	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
+			break;
+		case 0x5:	// srl,sra
+			switch (funct7)
+			{
+			case 0x00:
+				printf("srl	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x20:
+				printf("sra	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
+			break;
+		case 0x6:	// or,rem
+			switch (funct7)
+			{
+			case 0x00:
+				printf("or	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x01:
+				printf("rem	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
+			break;
+		case 0x7:	// and
+			switch (funct7)
+			{
+			case 0x00:
+				printf("and	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
 		default:
 			printf("unknown instruction %x\n", instruction);
 			break;
 		}
 		break;
-	case 0x1:	// sll,mulh
-		switch (funct7)
+	case 0x3b:
+		switch (funct3)
 		{
-		case 0x00:
-			printf("sll %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+		case 0x0:	// addw,mulw,subw
+			switch (funct7)
+			{
+			case 0x00:
+				printf("addw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x01:
+				printf("mulw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x20:
+				printf("subw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
-		case 0x01:
-			printf("mulh %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+		case 0x1:	// sllw
+			switch (funct7)
+			{
+			case 0x00:
+				printf("sllw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
-		default:
-			printf("unknown instruction %x\n", instruction);
+		case 0x4:	// divw
+			switch (funct7)
+			{
+			case 0x01:
+				printf("divw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
-		}
-		break;
-	case 0x2:	//slt
-		switch (funct7)
-		{
-		case 0x00:
-			printf("slt %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+		case 0x5:	// srlw,divuw,sraw
+			switch (funct7)
+			{
+			case 0x00:
+				printf("srlw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x01:
+				printf("divuw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			case 0x20:
+				printf("sraw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
-		default:
-			printf("unknown instruction %x\n", instruction);
+		case 0x6:	// remw
+			switch (funct7)
+			{
+			case 0x01:
+				printf("remw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
-		}
-		break;
-	case 0x4:	//xor,div
-		switch (funct7)
-		{
-		case 0x00:
-			printf("xor %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
-			break;
-		case 0x01:
-			printf("div %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
-			break;
-		default:
-			printf("unknown instruction %x\n", instruction);
-			break;
-		}
-		break;
-	case 0x5:	//srl,sra
-		switch (funct7)
-		{
-		case 0x00:
-			printf("srl %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
-			break;
-		case 0x20:
-			printf("sra %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
-			break;
-		default:
-			printf("unknown instruction %x\n", instruction);
-			break;
-		}
-		break;
-	case 0x6:	//or,rem
-		switch (funct7)
-		{
-		case 0x00:
-			printf("or %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
-			break;
-		case 0x01:
-			printf("rem %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
-			break;
-		default:
-			printf("unknown instruction %x\n", instruction);
-			break;
-		}
-		break;
-	case 0x7:	//and
-		switch (funct7)
-		{
-		case 0x00:
-			printf("and %s, %s, %s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+		case 0x7:	// remuw
+			switch (funct7)
+			{
+			case 0x01:
+				printf("remuw	%s,%s,%s\n", REG_NAME[rd], REG_NAME[rs1], REG_NAME[rs2]);
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+			}
 			break;
 		default:
 			printf("unknown instruction %x\n", instruction);
@@ -245,16 +341,16 @@ void show_I(INSTRUCTION instruction)
 		switch (funct3)
 		{
 		case 0x0:
-			printf("lb %s, 0x%x(%s)\n", REG_NAME[rd], imm, REG_NAME[rs1]);
+			printf("lb	%s,%lld(%s)\n", REG_NAME[rd], (long long)SignExt(imm,12), REG_NAME[rs1]);
 			break;
 		case 0x1:
-			printf("lh %s, 0x%x(%s)\n", REG_NAME[rd], imm, REG_NAME[rs1]);
+			printf("lh	%s,%lld(%s)\n", REG_NAME[rd], (long long)SignExt(imm,12), REG_NAME[rs1]);
 			break;
 		case 0x2:
-			printf("lw %s, 0x%x(%s)\n", REG_NAME[rd], imm, REG_NAME[rs1]);
+			printf("lw	%s,%lld(%s)\n", REG_NAME[rd], (long long)SignExt(imm,12), REG_NAME[rs1]);
 			break;
 		case 0x3:
-			printf("ld %s, 0x%x(%s)\n", REG_NAME[rd], imm, REG_NAME[rs1]);
+			printf("ld	%s,%lld(%s)\n", REG_NAME[rd], (long long)SignExt(imm,12), REG_NAME[rs1]);
 			break;
 		default:
 			printf("unknown instruction %x\n", instruction);
@@ -265,33 +361,33 @@ void show_I(INSTRUCTION instruction)
 		switch (funct3)
 		{
 		case 0x0:
-			printf("addi %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+			printf("addi	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
 			break;
 		case 0x1:
 			if(getbit(instruction,26,31) == 0x00)
-				printf("slli %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+				printf("slli	%s,%s,0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm & 0x3f);
 			else
 				printf("unknown instruction %x\n", instruction);
 			break;
 		case 0x2:
-			printf("slti %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+			printf("slti	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
 			break;
 		case 0x4:
-			printf("xori %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+			printf("xori	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
 			break;
 		case 0x5:
 			if(getbit(instruction,26,31) == 0x00)
-				printf("srli %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+				printf("srli	%s,%s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm & 0x3f);
 			else if(getbit(instruction,26,31) == 0x10)
-				printf("srai %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+				printf("srai	%s,%s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm & 0x3f);
 			else
 				printf("unknown instruction %x\n", instruction);
 			break;
 		case 0x6:
-			printf("ori %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+			printf("ori	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
 			break;
 		case 0x7:
-			printf("andi %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+			printf("andi	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
 			break;
 		default:
 			printf("unknown instruction %x\n", instruction);
@@ -299,14 +395,39 @@ void show_I(INSTRUCTION instruction)
 		}
 		break;
 	case 0x1b:
-		if(funct3 == 0x0)
-			printf("addiw %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
-		else
-			printf("unknown instruction %x\n", instruction);
+		switch(funct3)
+		{
+			case 0x0:
+				printf("addiw	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
+				break;
+			case 0x1:
+				if(get_funct7(instruction) == 0)
+					printf("slliw	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
+				else
+					printf("unknown instruction %x\n", instruction);
+				break;
+			case 0x5:
+				switch (get_funct7(instruction))
+				{
+				case 0x00:
+					printf("srliw	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
+					break;
+				case 0x20:
+					printf("sraiw	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
+					break;
+				default:
+					printf("unknown instruction %x\n", instruction);
+					break;
+				}
+				break;
+			default:
+				printf("unknown instruction %x\n", instruction);
+				break;
+		}
 		break;
 	case 0x67:
 		if(funct3 == 0x0)
-			printf("jalr %s, %s, 0x%x\n", REG_NAME[rd], REG_NAME[rs1], imm);
+			printf("jalr	%s,%s,%lld\n", REG_NAME[rd], REG_NAME[rs1], (long long)SignExt(imm,12));
 		else
 			printf("unknown instruction %x\n", instruction);
 		break;
@@ -331,16 +452,16 @@ void show_S(INSTRUCTION instruction)
 	switch (funct3)
 	{
 	case 0x0:
-		printf("sb %s, 0x%x(%s)\n", REG_NAME[rs2], imm, REG_NAME[rs1]);
+		printf("sb	%s,%lld(%s)\n", REG_NAME[rs2], (long long)SignExt(imm,12), REG_NAME[rs1]);
 		break;
 	case 0x1:
-		printf("sh %s, 0x%x(%s)\n", REG_NAME[rs2], imm, REG_NAME[rs1]);
+		printf("sh	%s,%lld(%s)\n", REG_NAME[rs2], (long long)SignExt(imm,12), REG_NAME[rs1]);
 		break;
 	case 0x2:
-		printf("sw %s, 0x%x(%s)\n", REG_NAME[rs2], imm, REG_NAME[rs1]);
+		printf("sw	%s,%lld(%s)\n", REG_NAME[rs2], (long long)SignExt(imm,12), REG_NAME[rs1]);
 		break;
 	case 0x3:
-		printf("sd %s, 0x%x(%s)\n", REG_NAME[rs2], imm, REG_NAME[rs1]);
+		printf("sd	%s,%lld(%s)\n", REG_NAME[rs2], (long long)SignExt(imm,12), REG_NAME[rs1]);
 		break;
 	default:
 		printf("unknown instruction %x\n", instruction);
@@ -357,16 +478,16 @@ void show_B(INSTRUCTION instruction)
 	switch (funct3)
 	{
 	case 0x0:
-		printf("beq %s, %s, 0x%x\n", REG_NAME[rs1], REG_NAME[rs2], imm);
+		printf("beq	%s,%s,%lld\n", REG_NAME[rs1], REG_NAME[rs2], (long long)SignExt(imm, 13));
 		break;
 	case 0x1:
-		printf("bne %s, %s, 0x%x\n", REG_NAME[rs1], REG_NAME[rs2], imm);
+		printf("bne	%s,%s,%lld\n", REG_NAME[rs1], REG_NAME[rs2], (long long)SignExt(imm, 13));
 		break;
 	case 0x4:
-		printf("blt %s, %s, 0x%x\n", REG_NAME[rs1], REG_NAME[rs2], imm);
+		printf("blt	%s,%s,%lld\n", REG_NAME[rs1], REG_NAME[rs2], (long long)SignExt(imm, 13));
 		break;
 	case 0x5:
-		printf("bge %s, %s, 0x%x\n", REG_NAME[rs1], REG_NAME[rs2], imm);
+		printf("bge	%s,%s,%lld\n", REG_NAME[rs1], REG_NAME[rs2], (long long)SignExt(imm, 13));
 		break;
 	default:
 		printf("unknown instruction %x\n", instruction);
@@ -382,10 +503,10 @@ void show_U(INSTRUCTION instruction)
 	switch (opcode)
 	{
 	case 0x17:
-		printf("auipc %s, 0x%x\n", REG_NAME[rd], imm);
+		printf("auipc	%s,0x%llx\n", REG_NAME[rd], SignExt(imm >> 12, 20));
 		break;
 	case 0x37:
-		printf("lui %s, 0x%x\n", REG_NAME[rd], imm);
+		printf("lui	%s, 0x%llx\n", REG_NAME[rd], SignExt(imm >> 12, 20));
 		break;
 	default:
 		printf("unknown instruction %x\n", instruction);
@@ -397,7 +518,7 @@ void show_J(INSTRUCTION instruction)
 {
 	unsigned int rd = get_rd(instruction);
 	unsigned int imm = get_imm(instruction);
-	printf("jal %s, 0x%x\n", REG_NAME[rd], imm);
+	printf("jal	%s,0x%x\n", REG_NAME[rd], imm);
 }
 
 
@@ -425,7 +546,7 @@ void show(INSTRUCTION instruction)
 		show_J(instruction);
 		break;
 	case TYPE_UNDEF:
-		printf("undefined instruction type!\n");
+		printf("undefined instruction type! %x\n", instruction);
 		break;
 	}
 }

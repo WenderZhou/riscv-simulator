@@ -3,16 +3,17 @@ CFLAGS = -Wall
 CC = g++
 LD = g++
 
-SIM_H = utils.h\
-		simulator.h
-
 SIM_C = main.cc\
 		simulator.cc\
-		utils.cc
+		utils.cc\
+		Read_Elf.cc\
+		def.cc
 
 SIM_O = main.o\
 		simulator.o\
-		utils.o
+		utils.o\
+		Read_Elf.o\
+		def.o
 
 PROGRAM = sim
 

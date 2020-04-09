@@ -1,0 +1,9 @@
+export PATH="/opt/riscv/bin:$PATH"
+
+riscv64-unknown-elf-gcc -Wa,-march=rv64i -o 
+
+riscv64-unknown-elf-objdump -d
+
+riscv64-unknown-elf-readelf -s
+
+riscv64-unknown-elf-objdump -d  >> .asm
