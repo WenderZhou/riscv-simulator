@@ -49,6 +49,25 @@ typedef enum
     M_LONG_LONG
 } MONITOR_DATA_TYPE;
 
+typedef enum
+{
+    ADD, MUL, SUB, SLL, MULH,
+    SLT, XOR, DIV, SRL, SRA,
+    OR, REM, AND, ADDW, MULW,
+    SUBW, SLLW, DIVW, SRLW, DIVUW,
+    SRAW, REMW, REMUW,
+    LB, LH, LW, LD,
+    ADDI, SLLI, SLTI, XORI, SRLI,
+    SRAI, ORI, ANDI,
+    ADDIW, SLLIW, SRLIW, SRAIW,
+    JALR, ECALL,
+    SB, SH, SW, SD,
+    BEQ, BNE, BLT, BGE,
+    AUIPC, LUI,
+    JAL,
+    UNDEF
+} ICODE;
+
 // control signal
 typedef enum
 {

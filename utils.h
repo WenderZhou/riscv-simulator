@@ -18,12 +18,14 @@ INSTRUCTION_TYPE get_type(INSTRUCTION instruction);
 
 REG SignExt(REG value, int length);
 
-void show_R(INSTRUCTION instruction);
-void show_I(INSTRUCTION instruction);
-void show_S(INSTRUCTION instruction);
-void show_B(INSTRUCTION instruction);
-void show_U(INSTRUCTION instruction);
-void show_J(INSTRUCTION instruction);
+ICODE get_icode_R(INSTRUCTION instruction);
+ICODE get_icode_I(INSTRUCTION instruction);
+ICODE get_icode_S(INSTRUCTION instruction);
+ICODE get_icode_B(INSTRUCTION instruction);
+ICODE get_icode_U(INSTRUCTION instruction);
+ICODE get_icode_J(INSTRUCTION instruction);
+ICODE get_icode(INSTRUCTION instruction);
+
 void show(INSTRUCTION instruction);
 
 class MonitorUnit

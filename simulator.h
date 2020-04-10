@@ -19,12 +19,6 @@ public:
     void ShowResult();
 
 private:
-    ERROR_TYPE OneInstruction_R(INSTRUCTION instruction);
-    ERROR_TYPE OneInstruction_I(INSTRUCTION instruction);
-    ERROR_TYPE OneInstruction_S(INSTRUCTION instruction);
-    ERROR_TYPE OneInstruction_B(INSTRUCTION instruction);
-    ERROR_TYPE OneInstruction_U(INSTRUCTION instruction);
-    ERROR_TYPE OneInstruction_J(INSTRUCTION instruction);
     ERROR_TYPE OneInstruction();
     INSTRUCTION FetchInstruction();
 
