@@ -3,6 +3,7 @@
 
 #include "def.h"
 #include "stdio.h"
+#include "string.h"
 
 unsigned int getbit(INSTRUCTION inst,int s,int e);
 
@@ -24,5 +25,17 @@ void show_B(INSTRUCTION instruction);
 void show_U(INSTRUCTION instruction);
 void show_J(INSTRUCTION instruction);
 void show(INSTRUCTION instruction);
+
+class MonitorUnit
+{
+public:
+    MonitorUnit(char* _name, MONITOR_DATA_TYPE _dataType, 
+                int _start = 0, int _end = 0);
+    char name[20];
+    unsigned long long vadr;
+    int start;
+    int end;
+    MONITOR_DATA_TYPE dataType;
+};
 
 #endif

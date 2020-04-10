@@ -6,14 +6,12 @@ LD = g++
 SIM_C = main.cc\
 		simulator.cc\
 		utils.cc\
-		Read_Elf.cc\
-		def.cc
+		Read_Elf.cc
 
 SIM_O = main.o\
 		simulator.o\
 		utils.o\
-		Read_Elf.o\
-		def.o
+		Read_Elf.o
 
 PROGRAM = sim
 

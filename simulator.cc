@@ -136,7 +136,7 @@ void Simulator::Run(char* filename, bool singleStep)
 		{
 			regfile[0] = 0;
 			ERROR_TYPE error = OneInstruction();
-			ShowResult();
+			printf("%llx,%llx,%llx\n\n",pc,elfReader->mend,regfile[1]);
 			if(error != NO_ERROR)
 				return;
 		}
@@ -470,9 +470,10 @@ ERROR_TYPE Simulator::OneInstruction_I(INSTRUCTION instruction)
 	case 0x67:
 		if(funct3 == 0x0)   // jalr
 		{
-            regfile[rd] = pc + 4;
+			// NOTE: calculate nextpc first then update regfile!!!
             nextpc = (REG)((SREG)regfile[rs1] + (SREG)SignExt(imm,12));
             nextpc = nextpc & (SREG)(~1);
+			regfile[rd] = pc + 4;
         }
 		else
 			return INVALID_INSTRUCTION;

@@ -4,6 +4,7 @@
 #include<stdio.h>
 #include<string.h>
 #include"def.h"
+#include"utils.h"
 
 typedef struct{
 	unsigned char b[8];
