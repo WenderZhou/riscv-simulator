@@ -11,14 +11,14 @@ class Simulator
 public:
     Simulator();
     ~Simulator();
-    void Run(char* filename, bool singleStep = false);
+    void Run(char* filename, bool singleStep = false,bool verbose = false);
     REG GetReg(int idx);
     BYTE ReadMemory(ADDR addr);
     void Monitor(MonitorUnit* _monitorTable, int cnt);
     void ShowResult();
 
 private:
-    ERROR_TYPE OneInstruction();
+    ERROR_TYPE OneInstruction(bool verbose);
     INSTRUCTION FetchInstruction();
 
     void load(char* filename);

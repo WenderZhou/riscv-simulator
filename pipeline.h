@@ -15,13 +15,13 @@ class Pipeline
 public:
     Pipeline();
     ~Pipeline();
-    void Run(char* filename, bool singleStep = false);
+    void Run(char* filename, bool singleStep = false, bool verbose = false);
     void Monitor(MonitorUnit* _monitorTable, int cnt);
     void ShowResult();
     void ShowStat();
     
 private:
-    ERROR_TYPE OneTick();
+    ERROR_TYPE OneTick(bool verbose);
     void Update();
     void Work();
 
@@ -59,6 +59,8 @@ private:
 
     int instructionCnt;
     int cycle;
+    int dataHazardCnt;
+    int controlHazardCnt;
 
     void Penalty(INSTRUCTION instruction);
 };

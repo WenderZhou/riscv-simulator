@@ -27,7 +27,7 @@ Simulator::~Simulator()
 	delete elfReader;
 }
 
-ERROR_TYPE Simulator::OneInstruction()
+ERROR_TYPE Simulator::OneInstruction(bool verbose)
 {
 	regfile[0] = 0;
 
@@ -37,7 +37,8 @@ ERROR_TYPE Simulator::OneInstruction()
 	if(pc == elfReader->mend)
 		return HALT;
 
-    // show(instruction);
+	if(verbose)
+    	show(instruction);
 
 	unsigned int rd = get_rd(instruction);
 	unsigned int rs1 = get_rs1(instruction);
@@ -259,7 +260,7 @@ void Simulator::load(char* filename)
 	fclose(file);
 }
 
-void Simulator::Run(char* filename, bool singleStep)
+void Simulator::Run(char* filename, bool singleStep, bool verbose)
 {
 	elfReader = new ElfReader(monitorTable, monitorCnt);
 	elfReader->read_elf(filename);
@@ -271,7 +272,7 @@ void Simulator::Run(char* filename, bool singleStep)
 	regfile[2] = MEMORY_SIZE - 10000;
 	regfile[3] = elfReader->gp;
 
-	char cmd = 0;
+	char cmd;
 	char buf[20];
 	ADDR userAdr = 0;
 	REG destPC = 0;
@@ -290,13 +291,13 @@ void Simulator::Run(char* filename, bool singleStep)
 				scanf("%s",buf);
 				destPC = strtol(buf,NULL,16);
 				do{
-					error = OneInstruction();
+					error = OneInstruction(verbose);
 					if(error != NO_ERROR)
 						return;
 				}while(pc != destPC);
 				break;
 			case 'c':	// continue one step
-				error = OneInstruction();
+				error = OneInstruction(verbose);
 				if(error != NO_ERROR)
 					return;
 				break;
@@ -342,7 +343,7 @@ void Simulator::Run(char* filename, bool singleStep)
 		while(true)
 		{
 			regfile[0] = 0;
-			error = OneInstruction();
+			error = OneInstruction(verbose);
 			if(error != NO_ERROR)
 				return;
 		}

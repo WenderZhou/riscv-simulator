@@ -6,13 +6,13 @@
 #include "def.h"
 #include "stdlib.h"
 
-// #define SIMULATOR
-#define PIPELINE
+#define SIMULATOR
+// #define PIPELINE
 
 int main(int argc, char **argv)
 {
     char* filename = argv[1];
-    printf("%s\n",filename);
+
 #ifdef SIMULATOR
     Simulator* sim = new Simulator();
 #else
@@ -22,6 +22,7 @@ int main(int argc, char **argv)
 #endif
 
     bool singleStep = false;
+    bool verbose = false;
     MonitorUnit* result;
 
     int argCount = 0;
@@ -31,7 +32,6 @@ int main(int argc, char **argv)
         {
             singleStep = true;
             argCount = 1;
-            break;
         }
         else if(!strcmp(*argv,"-o"))
         {
@@ -39,6 +39,11 @@ int main(int argc, char **argv)
             result = new MonitorUnit(*(argv+1),M_INT,(int)strtol(*(argv+2),NULL,10),(int)strtol(*(argv+3),NULL,10));
             sim->Monitor(result,1);
             argCount = 4;
+        }
+        else if(!strcmp(*argv,"-v"))
+        {
+            verbose = true;
+            argCount = 1;
         }
         else if(!strcmp(*argv,"-h"))
         {
@@ -52,11 +57,12 @@ int main(int argc, char **argv)
 
     
 
-    sim->Run(filename,singleStep);
+    sim->Run(filename,singleStep,verbose);
 
     sim->ShowResult();
 
+#ifdef PIPELINE
     sim->ShowStat();
-
+#endif
     return 0;
 }

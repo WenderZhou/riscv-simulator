@@ -1,5 +1,6 @@
 #include "pipeline.h"
 #include "cstring"
+#include "stdlib.h"
 
 static char REG_NAME[32][5]
 {
@@ -23,6 +24,8 @@ Pipeline::Pipeline():
     memset(regfile, 0, sizeof(regfile));
     instructionCnt = 0;
     cycle = 0;
+    dataHazardCnt = 0;
+    controlHazardCnt = 0;
 }
 
 Pipeline::~Pipeline()
@@ -75,45 +78,35 @@ void Pipeline::Work()
         wbu.Work();
 }
 
-ERROR_TYPE Pipeline::OneTick()
+ERROR_TYPE Pipeline::OneTick(bool verbose)
 {
     Update();
     regfile[0] = 0;
 
-    // printf("bubble:");
-    // for(int i = 0; i < 5; i++)
-    //     if(bubble[i])
-    //         printf(" T");
-    //     else
-    //         printf(" F");
-    // printf("\nstall:");
-    // for(int i = 0; i < 5; i++)
-    //     if(stall[i])
-    //         printf(" T");
-    //     else
-    //         printf(" F");
-    // printf("\n");
-
-    // printf("ID:");
-    // if(bubble[STAGE_ID])
-    //     printf("bubble\n");
-    // else
-    //     show(idu.instruction);
-    // printf("EXE:");
-    // if(bubble[STAGE_EXE])
-    //     printf("bubble\n");
-    // else
-    //     show(exeu.instruction);
-    // printf("MEM:");
-    // if(bubble[STAGE_MEM])
-    //     printf("bubble\n");
-    // else
-    //     show(memu.instruction);
-    // printf("WB:");
-    // if(bubble[STAGE_WB])
-    //     printf("bubble\n");
-    // else
-    //     show(wbu.instruction);
+    if(verbose)
+    {
+        printf("ID:");
+        if(bubble[STAGE_ID])
+            printf("bubble\n");
+        else
+            show(idu.instruction);
+        printf("EXE:");
+        if(bubble[STAGE_EXE])
+            printf("bubble\n");
+        else
+            show(exeu.instruction);
+        printf("MEM:");
+        if(bubble[STAGE_MEM])
+            printf("bubble\n");
+        else
+            show(memu.instruction);
+        printf("WB:");
+        if(bubble[STAGE_WB])
+            printf("bubble\n");
+        else
+            show(wbu.instruction);
+    }
+    
 
     if(wbu.pc == elfReader->mend || wbu.pc == elfReader->mend - 1)
 		return HALT;
@@ -130,8 +123,6 @@ ERROR_TYPE Pipeline::OneTick()
     HazardHandler();
 
     BubbleLogic();
-
-    // ShowResult();
 
     Penalty(wbu.instruction);
 
@@ -156,6 +147,7 @@ void Pipeline::BranchLogic()
         bubble[STAGE_IF] = true;
         bubble[STAGE_ID] = true;
         predPc = exeu.GetNextPc();
+        controlHazardCnt++;
     }
 }
 
@@ -212,7 +204,10 @@ bool Pipeline::CheckDataHazard()
             switch (get_WbSrc(exeu.instruction))
             {
             case WB_DATAOUT:
-                return true;
+                {
+                    dataHazardCnt++;
+                    return true;
+                }
             case WB_ALUOUT:
                 if(Ra == Rw)
                     idu.ForwardA(AluOut);
@@ -260,7 +255,10 @@ bool Pipeline::CheckDataHazard()
             switch (get_WbSrc(exeu.instruction))
             {
             case WB_DATAOUT:
-                return true;
+                {
+                    dataHazardCnt++;
+                    return true;
+                }
             case WB_ALUOUT:
                 idu.ForwardA(AluOut);
                 break;
@@ -279,7 +277,7 @@ bool Pipeline::CheckDataHazard()
     return false;
 }
 
-void Pipeline::Run(char* filename, bool singleStep)
+void Pipeline::Run(char* filename, bool singleStep, bool verbose)
 {
 	elfReader = new ElfReader(monitorTable, monitorCnt);
 	elfReader->read_elf(filename);
@@ -291,8 +289,6 @@ void Pipeline::Run(char* filename, bool singleStep)
 	regfile[2] = MEMORY_SIZE - 10000;
 	regfile[3] = elfReader->gp;
 
-    char cmd = 0;
-
     bubble[0] = false;
     for(int i = 1; i < 5; i++)
     {
@@ -303,41 +299,69 @@ void Pipeline::Run(char* filename, bool singleStep)
         stall[i] = false;
     }
 
+    char cmd;
+	char buf[20];
+	ADDR userAdr = 0;
+	REG destPC = 0;
+    ERROR_TYPE error = NO_ERROR;
+
 	if(singleStep)
 	{
-		while(true)
+        while(true)
 		{
 			regfile[0] = 0;
-			scanf("%c\n",&cmd);
-			if(cmd == 'c')
+			scanf("%c",&cmd);
+			switch (cmd)
 			{
-                ERROR_TYPE error = OneTick();
-                if(error != NO_ERROR)
-                     return;
-			}
-            else if(cmd == 'x')
-			{
-                ERROR_TYPE error = OneTick();
-                if(error != NO_ERROR)
-                    return;
-			}
-			else if(cmd == 'v')
-			{
+			case 'b':	// break point
+				scanf("%s",buf);
+				destPC = strtol(buf,NULL,16);
+				do{
+					error = OneTick(verbose);
+					if(error != NO_ERROR)
+						return;
+				}while(wbu.pc != destPC);
+				break;
+			case 'c':	// continue one step
+				error = OneTick(verbose);
+				if(error != NO_ERROR)
+					return;
+				break;
+			case 'h':
+				printf("type 'b 0x...' to run to the break point\n");
+				printf("type 'c' to run the simulator by one step\n");
+				printf("type 'm 0x...' to show memory 0x...\n");
+				printf("type 'q' to quit\n");
+				printf("type 'r' to show register\n");
+				printf("type 'R' to show Result\n");
+				printf("please type according to format, otherwise it may not work!\n");
+				break;
+			case 'm':	// show memory
+				scanf("%s",buf);
+				userAdr = strtol(buf,NULL,16);
+				if(userAdr < 0 || userAdr > MEMORY_SIZE)
+					printf("invalid address!\n");
+				else
+					printf("memory[0x%llx]:0x%hhx\n",userAdr,memory[userAdr]);
+				break;
+			case 'q':	// quit
+				return;
+			case 'r':	// show register
 				for(int i = 0; i < 8; ++i)
 				{
 					for(int j = 0; j < 4; ++j)
 						printf("%s:	%8llx ", REG_NAME[i*4+j], regfile[i*4+j]);
 					printf("\n");
 				}
-			}
-			else if(cmd == 'q')
-			{
-				return;
-			}
-			else if(cmd == 'r')
+				break;
+			case 'R':	// show result
 				ShowResult();
-			else
+				break;
+			default:
 				printf("type 'h' to see usage\n");
+				break;
+			}	
+			scanf("%c",&cmd);
 		}
 	}
 	else
@@ -345,11 +369,12 @@ void Pipeline::Run(char* filename, bool singleStep)
 		while(true)
 		{
 			regfile[0] = 0;
-			ERROR_TYPE error = OneTick();
+			ERROR_TYPE error = OneTick(verbose);
 			if(error != NO_ERROR)
 				return;
 		}
 	}
+    
 }
 
 void Pipeline::Monitor(MonitorUnit* _monitorTable, int cnt)
@@ -439,4 +464,7 @@ void Pipeline::ShowStat()
 {
     printf("instruction count:%d\n", instructionCnt);
     printf("cycle:%d\n",cycle);
+    printf("stall caused by data hazard:%d\n",dataHazardCnt);
+    printf("bubble cause by control hazard:%d, every time 2 bubble\n",
+            controlHazardCnt);
 }
