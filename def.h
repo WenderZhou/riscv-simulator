@@ -146,4 +146,13 @@ typedef enum
     STAGE_WB
 } PIPELINE_STAGE;
 
+
+#define MUL_PENALTY 6
+#define DIV_PENALTY 6
+#define REM_PENALTY 6
+#define MULW_PENALTY 4
+#define DIVW_PENALTY 4
+#define REMW_PENALTY 4
+#define MEMORY_PENALTY 100
+
 #endif

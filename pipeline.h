@@ -18,6 +18,8 @@ public:
     void Run(char* filename, bool singleStep = false);
     void Monitor(MonitorUnit* _monitorTable, int cnt);
     void ShowResult();
+    void ShowStat();
+    
 private:
     ERROR_TYPE OneTick();
     void Update();
@@ -54,6 +56,11 @@ private:
 
     MonitorUnit* monitorTable;
     int monitorCnt;
+
+    int instructionCnt;
+    int cycle;
+
+    void Penalty(INSTRUCTION instruction);
 };
 
 #endif

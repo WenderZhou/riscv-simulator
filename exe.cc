@@ -200,9 +200,7 @@ ERROR_TYPE EXE::Work()
         *AluOut = SignExt((REG)((int)A + (int)B),32);
         break;
     case ALU_MULW:
-        printf("A:%lld,B:%lld\n",A,B);
         *AluOut = SignExt((REG)((int)A * (int)B),32);
-        printf("AluOut:%lld\n",*AluOut);
         break;
     case ALU_SUBW:
         *AluOut = SignExt((REG)((int)A - (int)B),32);

@@ -1,6 +1,7 @@
 #include "simulator.h"
 #include "stdio.h"
 #include "cstring"
+#include "stdlib.h"
 
 static char REG_NAME[32][5]
 {
@@ -19,10 +20,6 @@ Simulator::Simulator()
     memset(regfile, 0, sizeof(regfile));
     pc = 0;
     nextpc = 0;
-    // *(INSTRUCTION*)memory = 0x00800513;
-    // *(INSTRUCTION*)(memory + 4) = 0x00852583;
-    // *(INSTRUCTION*)(memory + 8) = 0x40a58633;
-    // *(INSTRUCTION*)(memory + 16) = 20;
 }
 
 Simulator::~Simulator()
@@ -32,13 +29,15 @@ Simulator::~Simulator()
 
 ERROR_TYPE Simulator::OneInstruction()
 {
+	regfile[0] = 0;
+
     ERROR_TYPE error = NO_ERROR;
     INSTRUCTION instruction = FetchInstruction();
 
 	if(pc == elfReader->mend)
 		return HALT;
 
-    show(instruction);
+    // show(instruction);
 
 	unsigned int rd = get_rd(instruction);
 	unsigned int rs1 = get_rs1(instruction);
@@ -273,36 +272,69 @@ void Simulator::Run(char* filename, bool singleStep)
 	regfile[3] = elfReader->gp;
 
 	char cmd = 0;
+	char buf[20];
+	ADDR userAdr = 0;
+	REG destPC = 0;
+
+	ERROR_TYPE error = NO_ERROR;
 
 	if(singleStep)
 	{
 		while(true)
 		{
 			regfile[0] = 0;
-			scanf("%c\n",&cmd);
-			if(cmd == 'c')
+			scanf("%c",&cmd);
+			switch (cmd)
 			{
-				ERROR_TYPE error = OneInstruction();
+			case 'b':	// break point
+				scanf("%s",buf);
+				destPC = strtol(buf,NULL,16);
+				do{
+					error = OneInstruction();
+					if(error != NO_ERROR)
+						return;
+				}while(pc != destPC);
+				break;
+			case 'c':	// continue one step
+				error = OneInstruction();
 				if(error != NO_ERROR)
 					return;
-			}
-			else if(cmd == 'v')
-			{
+				break;
+			case 'h':
+				printf("type 'b 0x...' to run to the break point\n");
+				printf("type 'c' to run the simulator by one step\n");
+				printf("type 'm 0x...' to show memory 0x...\n");
+				printf("type 'q' to quit\n");
+				printf("type 'r' to show register\n");
+				printf("type 'R' to show Result\n");
+				printf("please type according to format, otherwise it may not work!\n");
+				break;
+			case 'm':	// show memory
+				scanf("%s",buf);
+				userAdr = strtol(buf,NULL,16);
+				if(userAdr < 0 || userAdr > MEMORY_SIZE)
+					printf("invalid address!\n");
+				else
+					printf("memory[0x%llx]:0x%hhx\n",userAdr,memory[userAdr]);
+				break;
+			case 'q':	// quit
+				return;
+			case 'r':	// show register
 				for(int i = 0; i < 8; ++i)
 				{
 					for(int j = 0; j < 4; ++j)
 						printf("%s:	%8llx ", REG_NAME[i*4+j], regfile[i*4+j]);
 					printf("\n");
 				}
-			}
-			else if(cmd == 'q')
-			{
-				return;
-			}
-			else if(cmd == 'r')
+				break;
+			case 'R':	// show result
 				ShowResult();
-			else
+				break;
+			default:
 				printf("type 'h' to see usage\n");
+				break;
+			}	
+			scanf("%c",&cmd);
 		}
 	}
 	else
@@ -310,7 +342,7 @@ void Simulator::Run(char* filename, bool singleStep)
 		while(true)
 		{
 			regfile[0] = 0;
-			ERROR_TYPE error = OneInstruction();
+			error = OneInstruction();
 			if(error != NO_ERROR)
 				return;
 		}

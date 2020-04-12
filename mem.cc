@@ -81,7 +81,6 @@ ERROR_TYPE MEM::Work()
         if(Adr % 4 != 0)
             return ALIGN_ERROR;
         *(WORD*)(memory + Adr) = (WORD)DataIn;
-        printf("!!Adr:%llx\n",Adr);
         break;
     case MEM_W_D:
         if(Adr % 8 != 0)

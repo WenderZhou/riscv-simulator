@@ -21,6 +21,8 @@ Pipeline::Pipeline():
 {
     memset(memory, 0, sizeof(memory));
     memset(regfile, 0, sizeof(regfile));
+    instructionCnt = 0;
+    cycle = 0;
 }
 
 Pipeline::~Pipeline()
@@ -92,29 +94,32 @@ ERROR_TYPE Pipeline::OneTick()
     //         printf(" F");
     // printf("\n");
 
-    printf("ID:");
-    if(bubble[STAGE_ID])
-        printf("bubble\n");
-    else
-        show(idu.instruction);
-    printf("EXE:");
-    if(bubble[STAGE_EXE])
-        printf("bubble\n");
-    else
-        show(exeu.instruction);
-    printf("MEM:");
-    if(bubble[STAGE_MEM])
-        printf("bubble\n");
-    else
-        show(memu.instruction);
-    printf("WB:");
-    if(bubble[STAGE_WB])
-        printf("bubble\n");
-    else
-        show(wbu.instruction);
+    // printf("ID:");
+    // if(bubble[STAGE_ID])
+    //     printf("bubble\n");
+    // else
+    //     show(idu.instruction);
+    // printf("EXE:");
+    // if(bubble[STAGE_EXE])
+    //     printf("bubble\n");
+    // else
+    //     show(exeu.instruction);
+    // printf("MEM:");
+    // if(bubble[STAGE_MEM])
+    //     printf("bubble\n");
+    // else
+    //     show(memu.instruction);
+    // printf("WB:");
+    // if(bubble[STAGE_WB])
+    //     printf("bubble\n");
+    // else
+    //     show(wbu.instruction);
 
     if(wbu.pc == elfReader->mend || wbu.pc == elfReader->mend - 1)
 		return HALT;
+
+    if(!bubble[STAGE_WB] && !stall[STAGE_WB])
+        instructionCnt++;
 
     Work();
 
@@ -126,21 +131,9 @@ ERROR_TYPE Pipeline::OneTick()
 
     BubbleLogic();
 
-    printf("pc:%llx\n",wbu.pc);
-    printf("a5:%lld,a4:%lld\n",regfile[15],regfile[14]);
-    printf("-40(s0):%x,-36(s0):%x,-32(s0):%x,-28(s0):%x,-24(s0):%x,-20(s0):%x\n",
-            *(unsigned int*)(memory + regfile[8] - 40),
-            *(unsigned int*)(memory + regfile[8] - 36),
-            *(unsigned int*)(memory + regfile[8] - 32),
-            *(unsigned int*)(memory + regfile[8] - 28),
-            *(unsigned int*)(memory + regfile[8] - 24),
-            *(unsigned int*)(memory + regfile[8] - 20));
-    ShowResult();
-    // printf("-20(s0):%llx\n",regfile[8]);
-    // printf("zero:%llx\n",regfile[0]);
-    // printf("memory[0x10208]:");
-    // show(*(INSTRUCTION*)(memory + 0x10208));
-    printf("\n");
+    // ShowResult();
+
+    Penalty(wbu.instruction);
 
     return NO_ERROR;
 }
@@ -164,7 +157,6 @@ void Pipeline::BranchLogic()
         bubble[STAGE_ID] = true;
         predPc = exeu.GetNextPc();
     }
-    // printf("%llx,%llx\n",exeu.GetNextPc(), idu.pc);
 }
 
 bool Pipeline::CheckDataHazard()
@@ -319,17 +311,15 @@ void Pipeline::Run(char* filename, bool singleStep)
 			scanf("%c\n",&cmd);
 			if(cmd == 'c')
 			{
-                while(wbu.pc != 0x10344)
-                   { ERROR_TYPE error = OneTick();
-                    if(error != NO_ERROR)
-                        return;}
+                ERROR_TYPE error = OneTick();
+                if(error != NO_ERROR)
+                     return;
 			}
             else if(cmd == 'x')
 			{
-                
-                   { ERROR_TYPE error = OneTick();
-                    if(error != NO_ERROR)
-                        return;}
+                ERROR_TYPE error = OneTick();
+                if(error != NO_ERROR)
+                    return;
 			}
 			else if(cmd == 'v')
 			{
@@ -421,4 +411,32 @@ void Pipeline::BubbleLogic()
         bubble[i] = true;
     if(!stall[STAGE_IF])
         bubble[i] = false;
+}
+
+void Pipeline::Penalty(INSTRUCTION instruction)
+{
+    switch (get_icode(instruction))
+    {
+    case MUL:cycle+=MUL_PENALTY;break;
+    case DIV:cycle+=DIV_PENALTY;break;
+    case REM:cycle+=REM_PENALTY;break;
+    case MULW:cycle+=MULW_PENALTY;break;
+    case DIVW:cycle+=DIVW_PENALTY;break;
+    case REMW:cycle+=REMW_PENALTY;break;
+    case LB:
+    case LH:
+    case LW:
+    case LD:
+    case SB:
+    case SH:
+    case SW:
+    case SD:cycle+=MEMORY_PENALTY;break;
+    default:cycle += 1;break;
+    }
+}
+
+void Pipeline::ShowStat()
+{
+    printf("instruction count:%d\n", instructionCnt);
+    printf("cycle:%d\n",cycle);
 }
