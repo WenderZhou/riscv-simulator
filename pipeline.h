@@ -57,10 +57,10 @@ private:
     MonitorUnit* monitorTable;
     int monitorCnt;
 
-    int instructionCnt;
-    int cycle;
-    int dataHazardCnt;
-    int controlHazardCnt;
+    unsigned long long instructionCnt;
+    unsigned long long cycle;
+    unsigned long long dataHazardCnt;
+    unsigned long long controlHazardCnt;
 
     void Penalty(INSTRUCTION instruction);
 };

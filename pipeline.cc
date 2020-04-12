@@ -462,9 +462,9 @@ void Pipeline::Penalty(INSTRUCTION instruction)
 
 void Pipeline::ShowStat()
 {
-    printf("instruction count:%d\n", instructionCnt);
-    printf("cycle:%d\n",cycle);
-    printf("stall caused by data hazard:%d\n",dataHazardCnt);
-    printf("bubble cause by control hazard:%d, every time 2 bubble\n",
+    printf("instruction count:%llu\n", instructionCnt);
+    printf("cycle:%llu\n",cycle);
+    printf("stall caused by data hazard:%llu\n",dataHazardCnt);
+    printf("bubble cause by control hazard:%llu, every time 2 bubble\n",
             controlHazardCnt);
 }

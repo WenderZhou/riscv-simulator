@@ -6,8 +6,8 @@
 #include "def.h"
 #include "stdlib.h"
 
-#define SIMULATOR
-// #define PIPELINE
+// #define SIMULATOR
+#define PIPELINE
 
 int main(int argc, char **argv)
 {
@@ -47,6 +47,7 @@ int main(int argc, char **argv)
         }
         else if(!strcmp(*argv,"-h"))
         {
+            printf("-v  show instruction\n");
             printf("-s  run simulator once a step, otherwise continuously\n");
             printf("-o  show result\n");
             printf("    format: -o variableName startIndex endIndex\n");
