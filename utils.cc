@@ -75,6 +75,48 @@ INSTRUCTION_TYPE get_type(INSTRUCTION instruction)
 	return TYPE_UNDEF;
 }
 
+unsigned int get_Rw(INSTRUCTION instruction)
+{
+	switch (get_opcode(instruction))
+	{
+	case 0x33:
+	case 0x3b:
+	case 0x03:
+	case 0x13:
+	case 0x1b:
+	case 0x67:
+	case 0x17:
+	case 0x37:
+	case 0x6f:
+		return get_rd(instruction);
+	default:
+		// so that can not match anything
+		return REGFILE_SIZE;
+	}
+}
+
+WB_SRC_CTRL get_WbSrc(INSTRUCTION instruction)
+{
+	switch (get_opcode(instruction))
+    {
+    case 0x67:
+    case 0x6f:
+        return WB_PC_PLUS4;
+    case 0x33:
+    case 0x3b:
+    case 0x13:
+    case 0x1b:
+    case 0x17:
+    case 0x37:
+        return WB_ALUOUT;
+    case 0x03:
+        return WB_DATAOUT;
+    default:
+        return WB_UNDEF;
+    }
+}
+
+
 REG SignExt(REG value, int length)
 {
 	return (REG)((SREG)value << (64 - length) >> (64 - length));

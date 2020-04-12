@@ -5,7 +5,6 @@
 #include "def.h"
 #include "Read_Elf.h"
 
-#define MEMORY_SIZE (4 * 1024 * 1024)
 
 class Simulator
 {

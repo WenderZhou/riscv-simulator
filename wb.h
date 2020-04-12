@@ -7,12 +7,23 @@
 class WB
 {
 public:
-    WB(REG* _regfile);
-    ERROR_TYPE OneInstruction(  WIRE AluOut, WIRE DataOut, 
-                        WIRE PC_plus4, WB_SRC_CTRL WbSrc, 
-                        unsigned int Rw, bool RegWr);
+    WB(REG* _regfile, WIRE* _busW);
+
+    void Update(REG _pc, WIRE _AluOut, WIRE _DataOut, INSTRUCTION _instruction);
+    void CtrlLogic();
+    ERROR_TYPE Work();
+
+    REG pc;
+    INSTRUCTION instruction;
+    
+    WIRE* busW;
 private:
     REG* regfile;
+    REG AluOut;
+    REG DataOut;
+    WB_SRC_CTRL WbSrc;
+    int Rw;
+    bool RegWr;
 };
 
 #endif

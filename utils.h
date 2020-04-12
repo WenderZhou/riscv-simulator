@@ -16,6 +16,9 @@ unsigned int get_funct7(INSTRUCTION instruction);
 unsigned int get_imm(INSTRUCTION instruction);
 INSTRUCTION_TYPE get_type(INSTRUCTION instruction);
 
+unsigned int get_Rw(INSTRUCTION instruction);
+WB_SRC_CTRL get_WbSrc(INSTRUCTION instruction);
+
 REG SignExt(REG value, int length);
 
 ICODE get_icode_R(INSTRUCTION instruction);

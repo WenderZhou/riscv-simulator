@@ -5,6 +5,8 @@
 
 #define STRANGE_MAGIC_NUMBER 1
 
+#define MEMORY_SIZE (4 * 1024 * 1024)
+
 typedef unsigned long long REG;
 typedef signed long long SREG;
 typedef unsigned long long ADDR;
@@ -90,7 +92,7 @@ typedef enum
     ALU_SUB,
     ALU_SLL,
     ALU_MULH,
-    ALU_STL,
+    ALU_SLT,
     ALU_XOR,
     ALU_DIV,
     ALU_SRL,
@@ -108,6 +110,8 @@ typedef enum
     ALU_SRAW,
     ALU_REMW,
     ALU_REMUW,
+    ALU_JALR,
+    ALU_PASS,
     ALU_UNDEF
 } ALU_CTRL;
 
@@ -131,5 +135,15 @@ typedef enum
     WB_DATAOUT,
     WB_UNDEF
 } WB_SRC_CTRL;
+
+
+typedef enum
+{
+    STAGE_IF,
+    STAGE_ID,
+    STAGE_EXE,
+    STAGE_MEM,
+    STAGE_WB
+} PIPELINE_STAGE;
 
 #endif

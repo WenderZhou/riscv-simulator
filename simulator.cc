@@ -311,7 +311,6 @@ void Simulator::Run(char* filename, bool singleStep)
 		{
 			regfile[0] = 0;
 			ERROR_TYPE error = OneInstruction();
-			printf("%llx,%llx,%llx\n\n",pc,elfReader->mend,regfile[1]);
 			if(error != NO_ERROR)
 				return;
 		}

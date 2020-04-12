@@ -1,12 +1,54 @@
 #include "mem.h"
 
-MEM::MEM(char* _memory)
+MEM::MEM(char* _memory, WIRE* _DataOut)
 {
     memory = _memory;
+    DataOut = _DataOut;
 }
 
-ERROR_TYPE MEM::OneInstruction(WIRE DataIn, WIRE* DataOut, MEM_RW_CTRL MemRw, ADDR Adr)
+void MEM::Update(REG _pc, WIRE _AluOut, WIRE _DataIn, INSTRUCTION _instruction)
 {
+    pc = _pc;
+    AluOut = _AluOut;
+    DataIn = _DataIn;
+    instruction = _instruction;
+}
+
+void MEM::CtrlLogic()
+{
+    Adr = AluOut;
+    switch (get_opcode(instruction))
+    {
+    case 0x03:
+        switch (get_funct3(instruction))
+        {
+        case 0x0:MemRw = MEM_R_B;break;
+        case 0x1:MemRw = MEM_R_H;break;
+        case 0x2:MemRw = MEM_R_W;break;
+        case 0x3:MemRw = MEM_R_D;break;
+        default:MemRw = MEM_UNDEF;break;
+        }
+        break;
+    case 0x23:
+        switch (get_funct3(instruction))
+        {
+        case 0x0:MemRw = MEM_W_B;break;
+        case 0x1:MemRw = MEM_W_H;break;
+        case 0x2:MemRw = MEM_W_W;break;
+        case 0x3:MemRw = MEM_W_D;break;
+        default:MemRw = MEM_UNDEF;break;
+        }
+        break;
+    default:
+        MemRw = MEM_UNDEF;
+        break;
+    }
+}
+
+ERROR_TYPE MEM::Work()
+{
+    CtrlLogic();
+
     switch (MemRw)
     {
     case MEM_R_B:
@@ -39,6 +81,7 @@ ERROR_TYPE MEM::OneInstruction(WIRE DataIn, WIRE* DataOut, MEM_RW_CTRL MemRw, AD
         if(Adr % 4 != 0)
             return ALIGN_ERROR;
         *(WORD*)(memory + Adr) = (WORD)DataIn;
+        printf("!!Adr:%llx\n",Adr);
         break;
     case MEM_W_D:
         if(Adr % 8 != 0)
